@@ -8,7 +8,7 @@ CryptoKnight is a production-ready Flask application that delivers real-time cry
 - **Live market ticker** and dynamic price charting powered by the CoinGecko API with intelligent caching.
 - **AI prediction engine** leveraging scikit-learn logistic regression for short-term trend forecasts with retraining tools.
 - **Analytics summary panel** summarizing market cap, volume, dominance ratios, and exportable prediction history (CSV/PDF).
-- **Responsive dark UI** built with Bootstrap 5, Chart.js, and custom styling for a neon-inspired visual identity.
+- **Responsive dark UI** built with Bootstrap 5, Plotly.js, and custom styling for a neon-inspired visual identity.
 - **Modular Flask architecture** with blueprints, services, and CLI command for model maintenance.
 - **PostgreSQL-ready** persistence via SQLAlchemy models (defaults to SQLite for local development/testing).
 - **Comprehensive test suite** using pytest with service mocking to ensure deterministic results.
@@ -20,7 +20,7 @@ CryptoKnight is a production-ready Flask application that delivers real-time cry
 - SQLAlchemy (PostgreSQL or SQLite)
 - Flask-Migrate for migrations (optional)
 - scikit-learn, numpy for AI predictions
-- Bootstrap 5, Chart.js, jQuery for the frontend
+- Bootstrap 5, Plotly.js, jQuery for the frontend
 
 ## 🚀 Getting Started
 
