@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="row gy-4">
+  <div class="col-12">
+    <div class="market-ticker d-flex overflow-hidden rounded-4 shadow-sm">
+      <div class="ticker-label px-3 py-2 d-flex align-items-center">Live Markets</div>
+      <div class="ticker-content flex-grow-1 py-2">
+        <ul id="market-ticker" class="d-flex gap-5 mb-0"></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-8">
+    <div class="card glass-card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="card-title mb-0">Market Overview</h5>
+          <select class="form-select form-select-sm w-auto" id="chart-coin-select"></select>
+        </div>
+        <div class="d-flex flex-wrap gap-2 mb-2">
+          <label class="form-label small mb-0" for="chart-interval-select">Interval</label>
+          <select class="form-select form-select-sm w-auto" id="chart-interval-select">
+            <option value="5" selected>5 Minutes</option>
+            <option value="15">15 Minutes</option>
+            <option value="30">30 Minutes</option>
+          </select>
+        </div>
+        <div id="marketChart" class="position-relative" style="height: 500px"></div>
+        <div class="mt-3 small text-secondary" id="chart-meta"></div>
+        <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+          <h6 class="text-uppercase small text-secondary mb-0">Latest Candles</h6>
+
+                  <div style="float: right;">
+                         
+                    
+                          <button class="btn btn-outline-primary btn-sm" id="export-xlsx">Export XLSX</button>
+
+                          <button
+                            class="btn btn-outline-light btn-sm"
+                            type="button"
+                            data-bs-toggle="modal"
+                            data-bs-target="#fullDataModal"
+                          >
+                            View Full Data
+                          </button>
+                </div>
+
+
+
+        </div>
+        <div class="table-responsive mt-2">
+          <table class="table table-sm table-hover align-middle mb-0 table-crypto">
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">Time</th>
+                <th scope="col">Open</th>
+                <th scope="col">High</th>
+                <th scope="col">Low</th>
+                <th scope="col">Close</th>
+              </tr>
+            </thead>
+            <tbody id="chart-data-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-xl-4" id="ai-panel">
+    <div class="card glass-card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div>
+            <h5 class="card-title mb-0">AI Prediction Panel</h5>
+            <p class="text-secondary small mb-0">Short-term trend forecasting</p>
+          </div>
+          <div class="d-flex align-items-center flex-wrap gap-2 justify-content-end">
+            <select class="form-select form-select-sm" id="prediction-timeframe">
+              <option value="15m" selected>15 Minutes</option>
+              <option value="1h">1 Hour</option>
+              <option value="4h">4 Hours</option>
+              <option value="1d">1 Day</option>
+            </select>
+            <button class="btn btn-primary btn-sm" id="trigger-prediction">Predict</button>
+            <button
+              class="btn btn-outline-light btn-sm"
+              type="button"
+              data-bs-toggle="modal"
+              data-bs-target="#priceAlertModal"
+            >
+              Create Alert
+            </button>
+          </div>
+        </div>
+        <div class="prediction-result text-center py-3">
+          <div class="display-6 fw-bold" id="prediction-label">--</div>
+          <p class="text-secondary mb-1">Confidence: <span id="prediction-confidence">--</span></p>
+          <p class="text-secondary mb-1">Timeframe: <span id="prediction-timeframe-display">--</span></p>
+          <div class="badge rounded-pill bg-primary" id="prediction-symbol">--</div>
+        </div>
+        <div class="mt-4">
+          <h6 class="text-uppercase small text-secondary">Model Performance</h6>
+          <div class="d-flex justify-content-between small">
+            <span>Accuracy</span>
+            <span id="metric-accuracy">--</span>
+          </div>
+          <div class="d-flex justify-content-between small">
+            <span>Precision</span>
+            <span id="metric-precision">--</span>
+          </div>
+          <div class="d-flex justify-content-between small">
+            <span>Recall</span>
+            <span id="metric-recall">--</span>
+          </div>
+
+
+          <!-- <button class="btn btn-outline-light btn-sm w-100 mt-3" id="retrain-model">Retrain Model</button> -->
+
+
+
+        </div>
+        <div class="mt-4">
+            <div style="float: right;">
+            <button class="btn btn-outline-primary btn-sm" id="export-csv">Export CSV</button>
+            <button class="btn btn-outline-primary btn-sm" id="export-pdf">Export PDF</button>
+            </div>
+          <h6 class="text-uppercase small text-secondary">Recent Predictions</h6>
+        
+            <br/>
+          <ul class="list-group list-group-flush small" id="prediction-history"></ul>
+        </div>
+        <div class="mt-4">
+          <h6 class="text-uppercase small text-secondary">Price Alerts</h6>
+
+
+
+          {% if alerts %}
+          <ul class="list-group list-group-flush small alerts-list" id="alerts_data_render">
+          </ul>
+          {% else %}
+
+
+          <p class="small mb-0 alerts-empty">No alerts configured yet. Create one to get notified.</p>
+          {% endif %}
+
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-xxl-12" id="analytics" style="display: none;">
+    <div class="card glass-card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Analytics Summary</h5>
+        <div class="row g-3 mt-1">
+          <div class="col-sm-6 col-lg-3">
+            <div class="metric-card">
+              <span class="metric-label">Open</span>
+              <span class="metric-value" id="metric-open">--</span>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="metric-card">
+              <span class="metric-label">High</span>
+              <span class="metric-value" id="metric-high">--</span>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="metric-card">
+              <span class="metric-label">Low</span>
+              <span class="metric-value" id="metric-low">--</span>
+            </div>
+          </div>
+          <div class="col-sm-6 col-lg-3">
+            <div class="metric-card">
+              <span class="metric-label">Close</span>
+              <span class="metric-value" id="metric-close">--</span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4" id="reports">
+          <h6 class="text-secondary text-uppercase small">Export Tools</h6>
+          <div class="d-flex flex-wrap gap-2">
+          
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- <div class="col-12 col-xxl-4">
+    <div class="card glass-card h-100">
+      <div class="card-body">
+        <h5 class="card-title">User Preferences</h5>
+        <form method="post" action="{{ url_for('main.update_preferences') }}">
+          {{ form.hidden_tag() }}
+          <div class="mb-3">
+            {{ form.preferred_pairs.label(class_='form-label') }}
+            {{ form.preferred_pairs(class_='form-control', placeholder='BTC/USDT, ETH/USDT') }}
+          </div>
+          <div class="mb-3">
+            {{ form.theme.label(class_='form-label') }}
+            {{ form.theme(class_='form-select', value=preference.theme) }}
+          </div>
+          <div class="form-check form-switch mb-3">
+            {{ form.notifications_enabled(class_='form-check-input', checked=preference.notifications_enabled) }}
+            {{ form.notifications_enabled.label(class_='form-check-label') }}
+          </div>
+          <button class="btn btn-primary w-100" type="submit">Save Preferences</button>
+        </form>
+      </div>
+    </div>
+  </div> -->
+</section>
+{% endblock %}
+
+{% block modals %}
+<div
+  class="modal fade"
+  id="fullDataModal"
+  tabindex="-1"
+  aria-labelledby="fullDataModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content glass-card">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" id="fullDataModalLabel">Full Market Data</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0 table-crypto">
+            <thead class="table-dark">
+              <tr>
+                <th scope="col">Time</th>
+                <th scope="col">Open</th>
+                <th scope="col">High</th>
+                <th scope="col">Low</th>
+                <th scope="col">Close</th>
+              </tr>
+            </thead>
+            <tbody id="chart-data-full-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div
+  class="modal fade"
+  id="priceAlertModal"
+  tabindex="-1"
+  aria-labelledby="priceAlertModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content glass-card">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" id="priceAlertModalLabel">Create Price Alert</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{{ url_for('main.create_alert') }}">
+        <div class="modal-body">
+          {{ alert_form.hidden_tag() }}
+          <div class="mb-3">
+            {{ alert_form.symbol.label(class_='form-label') }}
+            {{ alert_form.symbol(class_='form-select') }}
+          </div>
+          <div class="mb-3">
+            {{ alert_form.direction.label(class_='form-label') }}
+            {{ alert_form.direction(class_='form-select') }}
+          </div>
+          <div class="mb-3">
+            {{ alert_form.threshold.label(class_='form-label') }}
+            {{ alert_form.threshold(class_='form-control', placeholder='Enter price threshold') }}
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          {{ alert_form.submit(class_='btn btn-primary') }}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
